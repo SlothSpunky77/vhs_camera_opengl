@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 ///
 /// Everything is drawn with system fonts so the app ships no asset payload.
 abstract final class VhsTheme {
-  static const Color background = Color(0xFF07090C);
+  static const Color background = Color.fromARGB(255, 70, 70, 70);
   static const Color panel = Color(0xFF11151A);
   static const Color outline = Color(0xFF2A323B);
   static const Color osd = Color(0xFFEDEFE6);
-  static const Color accent = Color(0xFF6DF0C2);
+  static const Color accent = Color.fromARGB(255, 255, 255, 255);
   static const Color record = Color(0xFFFF3B30);
   static const Color amber = Color(0xFFFFC845);
 
