@@ -230,15 +230,23 @@ class _CameraScreenState extends State<CameraScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: VhsTheme.background,
-      body: SafeArea(
-        child: Column(
-          children: <Widget>[
-            _statusBar(),
-            Expanded(child: Center(child: _viewfinder())),
-            _deck(),
-          ],
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/metal_sheet.png'),
+          repeat: ImageRepeat.repeat,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Column(
+            children: <Widget>[
+              _statusBar(),
+              Expanded(child: Center(child: _viewfinder())),
+              _deck(),
+            ],
+          ),
         ),
       ),
     );

@@ -31,27 +31,35 @@ class EffectsPanel extends StatelessWidget {
   }) {
     return showModalBottomSheet<void>(
       context: context,
-      backgroundColor: VhsTheme.background,
+      backgroundColor: Colors.transparent,
       isScrollControlled: true,
       showDragHandle: true,
       constraints: const BoxConstraints(maxHeight: 620),
       builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setSheetState) {
-            return EffectsPanel(
-              settings: settings,
-              capture: capture,
-              recording: recording,
-              onSettings: (VhsSettings next) {
-                setSheetState(() => settings = next);
-                onSettings(next);
-              },
-              onCapture: (CaptureSettings next) {
-                setSheetState(() => capture = next);
-                onCapture(next);
-              },
-            );
-          },
+        return DecoratedBox(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/metal_sheet.png'),
+              repeat: ImageRepeat.repeat,
+            ),
+          ),
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setSheetState) {
+              return EffectsPanel(
+                settings: settings,
+                capture: capture,
+                recording: recording,
+                onSettings: (VhsSettings next) {
+                  setSheetState(() => settings = next);
+                  onSettings(next);
+                },
+                onCapture: (CaptureSettings next) {
+                  setSheetState(() => capture = next);
+                  onCapture(next);
+                },
+              );
+            },
+          ),
         );
       },
     );

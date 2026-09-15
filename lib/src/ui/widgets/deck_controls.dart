@@ -56,7 +56,7 @@ class _AssetButtonState extends State<AssetButton> {
             }
           },
           child: Image.asset(
-            _pressed || widget.active ? widget.onImage : widget.offImage,
+            _pressed ? widget.onImage : widget.offImage,
             width: 46,
             height: 46,
             fit: BoxFit.contain,
