@@ -46,14 +46,14 @@ class HoldRocker extends StatefulWidget {
 }
 
 class _HoldRockerState extends State<HoldRocker>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final Ticker _ticker;
   late final AnimationController _spring;
 
   Duration _last = Duration.zero;
   Duration _heldFor = Duration.zero;
   double _dragOffset = 0.0;
-  final double _maxOffset = 30.0;
+  final double _maxOffset = 20.0;
 
   @override
   void initState() {
@@ -134,7 +134,7 @@ class _HoldRockerState extends State<HoldRocker>
             widget.label,
             style: VhsTheme.mono(size: 9, color: VhsTheme.outline, spacing: 2),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           GestureDetector(
             onLongPress: widget.onReset,
             child: Text(
@@ -143,9 +143,9 @@ class _HoldRockerState extends State<HoldRocker>
               style: VhsTheme.mono(size: 13, color: VhsTheme.accent),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 4),
           SizedBox(
-            height: _maxOffset * 2 + 50, // Gap above and below for slider travel
+            height: _maxOffset * 2 + 40, // Gap above and below for slider travel
             child: Stack(
               alignment: Alignment.center,
               clipBehavior: Clip.none,
@@ -160,8 +160,8 @@ class _HoldRockerState extends State<HoldRocker>
                     offset: Offset(0, _dragOffset),
                     child: Image.asset(
                       'assets/slider.png',
-                      width: 50,
-                      height: 50,
+                      width: 40,
+                      height: 40,
                       fit: BoxFit.contain,
                     ),
                   ),
