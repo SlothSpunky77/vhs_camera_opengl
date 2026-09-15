@@ -305,18 +305,21 @@ class _CameraScreenState extends State<CameraScreen>
             ),
           ),
           const SizedBox(width: 8),
-          DeckButton(
-            icon: _camera.torchOn ? Icons.flash_on : Icons.flash_off,
+          AssetButton(
+            onImage: 'assets/flashon.png',
+            offImage: 'assets/flashoff.png',
             label: 'Toggle light',
             active: _camera.torchOn,
             enabled: _camera.isReady,
             onTap: () => unawaited(_camera.toggleTorch()),
           ),
           const SizedBox(width: 8),
-          DeckButton(
-            icon: Icons.cameraswitch_outlined,
+          AssetButton(
+            onImage: 'assets/rotateon.png',
+            offImage: 'assets/rotateoff.png',
             label: 'Switch camera',
-            enabled: _camera.hasMultipleCameras && !recording && !_camera.isBusy,
+            enabled:
+                _camera.hasMultipleCameras && !recording && !_camera.isBusy,
             onTap: () => unawaited(_camera.switchCamera()),
           ),
         ],
@@ -430,8 +433,7 @@ class _CameraScreenState extends State<CameraScreen>
   }
 
   Widget _placeholder() {
-    final String text =
-        _shaderError != null
+    final String text = _shaderError != null
         ? 'SHADER ERROR'
         : _camera.errorMessage ?? 'STANDBY';
     return Center(
@@ -480,8 +482,9 @@ class _CameraScreenState extends State<CameraScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              DeckButton(
-                icon: Icons.tune,
+              AssetButton(
+                onImage: 'assets/settings.png',
+                offImage: 'assets/settings.png',
                 label: 'Tape settings',
                 onTap: () => unawaited(_openEffects()),
               ),
@@ -491,8 +494,9 @@ class _CameraScreenState extends State<CameraScreen>
                 busy: _busy,
                 onPressed: () => unawaited(_onShutter()),
               ),
-              DeckButton(
-                icon: Icons.photo_library_outlined,
+              AssetButton(
+                onImage: 'assets/gallery.png',
+                offImage: 'assets/gallery.png',
                 label: 'Open gallery',
                 onTap: () => unawaited(_openGallery()),
               ),

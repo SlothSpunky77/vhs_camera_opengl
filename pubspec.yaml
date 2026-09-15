@@ -33,3 +33,6 @@ flutter:
   # Compiled ahead of time by the Flutter tool into the engine shader format.
   shaders:
     - shaders/vhs.frag
+
+  assets:
+    - assets/

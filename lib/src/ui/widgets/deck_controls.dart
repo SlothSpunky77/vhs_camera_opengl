@@ -3,6 +3,70 @@ import 'package:flutter/material.dart';
 import '../../models/capture_settings.dart';
 import '../vhs_theme.dart';
 
+/// A button that uses custom asset images for on/off states.
+/// The image switches only when the finger is lifted (onTapUp).
+class AssetButton extends StatefulWidget {
+  const AssetButton({
+    required this.onImage,
+    required this.offImage,
+    required this.label,
+    required this.onTap,
+    this.active = false,
+    this.enabled = true,
+    super.key,
+  });
+
+  final String onImage;
+  final String offImage;
+  final String label;
+  final VoidCallback onTap;
+  final bool active;
+  final bool enabled;
+
+  @override
+  State<AssetButton> createState() => _AssetButtonState();
+}
+
+class _AssetButtonState extends State<AssetButton> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: widget.label,
+      child: Opacity(
+        opacity: widget.enabled ? 1 : 0.35,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (_) {
+            if (widget.enabled) {
+              setState(() => _pressed = true);
+            }
+          },
+          onTapUp: (_) {
+            if (widget.enabled) {
+              setState(() => _pressed = false);
+              widget.onTap();
+            }
+          },
+          onTapCancel: () {
+            if (widget.enabled) {
+              setState(() => _pressed = false);
+            }
+          },
+          child: Image.asset(
+            _pressed || widget.active ? widget.onImage : widget.offImage,
+            width: 46,
+            height: 46,
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The big manual shutter / record trigger.
 class ShutterButton extends StatelessWidget {
   const ShutterButton({
@@ -97,32 +161,34 @@ class ModeSelector extends StatelessWidget {
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
-          children: CaptureMode.values.map((CaptureMode value) {
-            final bool selected = value == mode;
-            return GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: enabled && !selected ? () => onChanged(value) : null,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 9,
-                ),
-                decoration: BoxDecoration(
-                  color: selected ? VhsTheme.accent : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  value == CaptureMode.photo ? 'PHOTO' : 'VIDEO',
-                  style: VhsTheme.mono(
-                    size: 11,
-                    color: selected ? VhsTheme.background : VhsTheme.osd,
-                    spacing: 2,
+          children: CaptureMode.values
+              .map((CaptureMode value) {
+                final bool selected = value == mode;
+                return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: enabled && !selected ? () => onChanged(value) : null,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selected ? VhsTheme.accent : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      value == CaptureMode.photo ? 'PHOTO' : 'VIDEO',
+                      style: VhsTheme.mono(
+                        size: 11,
+                        color: selected ? VhsTheme.background : VhsTheme.osd,
+                        spacing: 2,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            );
-          }).toList(growable: false),
+                );
+              })
+              .toList(growable: false),
         ),
       ),
     );
