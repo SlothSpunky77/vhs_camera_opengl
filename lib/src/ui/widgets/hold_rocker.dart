@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart';
 import 'package:flutter/scheduler.dart';
 
 import '../vhs_theme.dart';
@@ -47,50 +48,77 @@ class HoldRocker extends StatefulWidget {
 class _HoldRockerState extends State<HoldRocker>
     with SingleTickerProviderStateMixin {
   late final Ticker _ticker;
+  late final AnimationController _spring;
+
   Duration _last = Duration.zero;
   Duration _heldFor = Duration.zero;
-  int _direction = 0;
+  double _dragOffset = 0.0;
+  final double _maxOffset = 30.0;
 
   @override
   void initState() {
     super.initState();
     _ticker = createTicker(_onTick);
+    _spring = AnimationController.unbounded(vsync: this);
+    _spring.addListener(() {
+      setState(() {
+        _dragOffset = _spring.value;
+      });
+    });
   }
 
   void _onTick(Duration elapsed) {
     final Duration dt = elapsed - _last;
     _last = elapsed;
+    if (_dragOffset == 0 || dt <= Duration.zero) return;
+
     _heldFor += dt;
-    if (_direction == 0 || dt <= Duration.zero) return;
 
     final double seconds = dt.inMicroseconds / 1000000.0;
     final double ramp = widget.accelerate
         ? 1.0 + 2.0 * (_heldFor.inMilliseconds / 1500.0).clamp(0.0, 1.0)
         : 1.0;
-    widget.onDelta(_direction * widget.unitsPerSecond * ramp * seconds);
+
+    // Calculate direction and intensity from drag offset.
+    // Negative offset means dragging up (which increases the value, so direction = 1).
+    final double intensity = (_dragOffset / _maxOffset).abs();
+    final double direction = _dragOffset < 0 ? 1 : -1;
+
+    widget.onDelta(direction * intensity * widget.unitsPerSecond * ramp * seconds);
   }
 
-  void _press(int direction) {
+  void _onDragStart(DragStartDetails details) {
     if (!widget.enabled) return;
-    // Both buttons are independent recognisers, so a second finger can land
-    // while the ticker is still running; restarting it would throw.
+    _spring.stop();
     if (_ticker.isActive) _ticker.stop();
-    _direction = direction;
     _last = Duration.zero;
     _heldFor = Duration.zero;
-    // One immediate step so a quick tap always does something.
-    widget.onDelta(direction * widget.unitsPerSecond * 0.06);
     _ticker.start();
   }
 
-  void _release() {
-    _direction = 0;
+  void _onDragUpdate(DragUpdateDetails details) {
+    if (!widget.enabled) return;
+    setState(() {
+      _dragOffset = (_dragOffset + details.delta.dy).clamp(-_maxOffset, _maxOffset);
+    });
+  }
+
+  void _onDragEnd() {
     if (_ticker.isActive) _ticker.stop();
+    _spring.animateWith(
+      SpringSimulation(
+        const SpringDescription(mass: 1, stiffness: 200, damping: 15),
+        _dragOffset,
+        0,
+        0,
+      ),
+    );
   }
 
   @override
   void dispose() {
     _ticker.dispose();
+    _spring.dispose();
     super.dispose();
   }
 
@@ -106,75 +134,42 @@ class _HoldRockerState extends State<HoldRocker>
             widget.label,
             style: VhsTheme.mono(size: 9, color: VhsTheme.outline, spacing: 2),
           ),
-          const SizedBox(height: 4),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: VhsTheme.panel,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: VhsTheme.outline),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onLongPress: widget.onReset,
+            child: Text(
+              widget.readout,
+              textAlign: TextAlign.center,
+              style: VhsTheme.mono(size: 13, color: VhsTheme.accent),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: _maxOffset * 2 + 50, // Gap above and below for slider travel
+            child: Stack(
+              alignment: Alignment.center,
+              clipBehavior: Clip.none,
               children: <Widget>[
-                _RockerButton(
-                  icon: Icons.remove,
-                  semanticLabel: '${widget.label} down',
-                  onPress: () => _press(-1),
-                  onRelease: _release,
-                ),
                 GestureDetector(
-                  onLongPress: widget.onReset,
-                  child: SizedBox(
-                    width: 62,
-                    child: Text(
-                      widget.readout,
-                      textAlign: TextAlign.center,
-                      style: VhsTheme.mono(size: 13, color: VhsTheme.accent),
+                  behavior: HitTestBehavior.opaque,
+                  onVerticalDragStart: _onDragStart,
+                  onVerticalDragUpdate: _onDragUpdate,
+                  onVerticalDragEnd: (_) => _onDragEnd(),
+                  onVerticalDragCancel: _onDragEnd,
+                  child: Transform.translate(
+                    offset: Offset(0, _dragOffset),
+                    child: Image.asset(
+                      'assets/slider.png',
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.contain,
                     ),
                   ),
-                ),
-                _RockerButton(
-                  icon: Icons.add,
-                  semanticLabel: '${widget.label} up',
-                  onPress: () => _press(1),
-                  onRelease: _release,
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _RockerButton extends StatelessWidget {
-  const _RockerButton({
-    required this.icon,
-    required this.semanticLabel,
-    required this.onPress,
-    required this.onRelease,
-  });
-
-  final IconData icon;
-  final String semanticLabel;
-  final VoidCallback onPress;
-  final VoidCallback onRelease;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: semanticLabel,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: (_) => onPress(),
-        onTapUp: (_) => onRelease(),
-        onTapCancel: onRelease,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-          child: Icon(icon, size: 20, color: VhsTheme.osd),
-        ),
       ),
     );
   }

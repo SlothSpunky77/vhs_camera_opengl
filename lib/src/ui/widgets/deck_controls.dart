@@ -55,11 +55,17 @@ class _AssetButtonState extends State<AssetButton> {
               setState(() => _pressed = false);
             }
           },
-          child: Image.asset(
-            _pressed ? widget.onImage : widget.offImage,
-            width: 46,
-            height: 46,
-            fit: BoxFit.contain,
+          child: ColorFiltered(
+            colorFilter: ColorFilter.mode(
+              Colors.black.withValues(alpha: _pressed ? 0.3 : 0.0),
+              BlendMode.darken,
+            ),
+            child: Image.asset(
+              widget.active ? widget.onImage : widget.offImage,
+              width: 46,
+              height: 46,
+              fit: BoxFit.contain,
+            ),
           ),
         ),
       ),
